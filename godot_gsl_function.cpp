@@ -11,8 +11,7 @@
 
 #define GGSL_ARGV_BOUNDS_SET(__var, __bounds, k)                        \
     {                                                                   \
-        memcpy(&__var[k], __bounds,                                     \
-               sizeof(size_t) * ARGV_BOUND_DATA_COUNT);                 \
+        memcpy(&__var[k], __bounds, sizeof(GGSL_BOUNDS));               \
     }                                                                   \
 
 
@@ -22,10 +21,10 @@ typedef enum GGSL_PARSER_STATE {
     S_SEP,
 } GGSL_PARSER_STATE;
 
-size_t *argv_bounds_parse(const String vn, size_t *size)
+GGSL_BOUNDS argv_bounds_parse(const String vn, size_t *size)
 {
-    static GGSL_PARSER_STATE state = S_IDLE;
-    static size_t bounds[ARGV_BOUND_DATA_COUNT];
+    GGSL_PARSER_STATE state = S_IDLE;
+    size_t bounds[ARGV_BOUND_DATA_COUNT];
     bounds[0] = bounds[2] = 0;
     bounds[1] = size[0];
     bounds[3] = size[1];
@@ -74,7 +73,12 @@ size_t *argv_bounds_parse(const String vn, size_t *size)
         }
     }
 
-    return &bounds[0];
+    GGSL_BOUNDS _bounds;
+    _bounds.r1 = bounds[0];
+    _bounds.r2 = bounds[1];
+    _bounds.c1 = bounds[2];
+    _bounds.c2 = bounds[3];
+    return _bounds;
 }
 
 String remove_whitespace(const String str)
@@ -116,9 +120,13 @@ GodotGSLFunction::~GodotGSLFunction()
 
 void GodotGSLFunction::add_arguments(const Array args, GodotGSLMatrix **a)
 {
-    GGSL_DEBUG_MSG("GodotGSLFunction::add_arguments: procedure starts", 0);
     arg_names = args;
 
+    /*
+     * TODO: There is no need to backup here
+     * No new insturctions are added
+     * All added at once
+     */
     GodotGSLMatrix **backup = NULL;
     if (argv != NULL)
     {
@@ -126,13 +134,11 @@ void GodotGSLFunction::add_arguments(const Array args, GodotGSLMatrix **a)
     }
 
     argv = a;
-    GGSL_DEBUG_MSG("GodotGSLFunction::add_arguments: procedure contd", 0);
 
     if (backup != NULL)
     {
         GGSL_FREE(backup);
     }
-    GGSL_DEBUG_MSG("GodotGSLFunction::add_arguments: procedure ends", 0);
 
     argc = args.size();
 }
@@ -158,27 +164,18 @@ void GodotGSLFunction::add_instruction(const String in, const Array args)
         backup = instructions;
     }
 
-    size_t base_size = sizeof(GodotGSLInstruction*);
-    size_t mem_size = base_size * (++instruction_count);
-    uint8_t* ins_tmp = memnew_arr(uint8_t, mem_size);
+    GGSL_ALLOC_G(instructions, instruction_count + 1, GodotGSLInstruction);
 
     if (backup != NULL)
     {
-        memcpy(ins_tmp, backup, mem_size - base_size);
+        memcpy(instructions, backup, instruction_count * sizeof(GodotGSLInstruction*));
         GGSL_FREE(backup);
     }
-    instructions = (GodotGSLInstruction**) ins_tmp;
 
-    GodotGSLInstruction *ins = memnew(GodotGSLInstruction);
-    ins->name = in;
-
-    int size = args.size();
-    if (size > 0)
-    {
-        set_instruction_arguments(ins, args);
-    }
-    
-    instructions[instruction_count - 1] = ins;
+    GodotGSLInstruction *ins = memnew(GodotGSLInstruction(in));
+    set_instruction_arguments(ins, args);
+    instructions[instruction_count] = ins;
+    instruction_count++;
 
     if (current == NULL)
     {
@@ -220,11 +217,9 @@ void GodotGSLFunction::set_instruction_arguments(GodotGSLInstruction *ins, Array
     if (ins->argv != NULL)
     {
         GGSL_FREE(ins->argv);
-        memdelete_arr(ins->argv_bounds);
     }
 
     GGSL_ALLOC(ins->argv, size);
-    ins->argv_bounds = memnew_arr(GGSL_BOUNDS, size);
 
     for (int k = 0; k < size; k++)
     {
@@ -241,10 +236,10 @@ void GodotGSLFunction::set_instruction_arguments(GodotGSLInstruction *ins, Array
         if (index > -1)
         {
             ins->argv[k] = argv[index];
-            GodotGSLMatrix *argv_mtx = (GodotGSLMatrix*) argv[index];
-            size_t *bounds = argv_bounds_parse(arg, argv_mtx->size);
+            GodotGSLMatrix *argv_mtx = argv[index];
+            GGSL_BOUNDS bounds = argv_bounds_parse(arg, argv_mtx->size);
             /* TODO: memcpy may no be the right wway to do this */
-            GGSL_ARGV_BOUNDS_SET(ins->argv_bounds, bounds, k);
+            GGSL_ARGV_BOUNDS_SET(ins->argv_bounds, &bounds, k);
         }
         else
         {

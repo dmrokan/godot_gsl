@@ -153,7 +153,7 @@ public:
     void init(const Array a);
     void set_zero();
     void set_identity();
-    int add(const GodotGSLMatrix &a, GGSL_BOUNDS *bounds);
+    int add(const GodotGSLMatrix *a, GGSL_BOUNDS *bounds);
     int sub(const GodotGSLMatrix &a);
     int mul_elements(const GodotGSLMatrix &a);
     int scale(const STYPE a);
@@ -171,6 +171,8 @@ public:
     void invert(GodotGSLMatrix *to);
     void add_node_path(Object *obj, const Vector<StringName> key, const int index, const int dir);
     void update_node_properties();
+    void set_from_array(const GGSL_BOUNDS &bounds, const Array &arr);
+    bool is_bounds_included(GGSL_BOUNDS &bounds);
 
     size_t size[2];
     GGSL_BOUNDS bounds;
@@ -188,8 +190,8 @@ private:
     STYPE (*math_func2)(STYPE a, STYPE b);
     bool _condition(const cond_type cond, const GodotGSLMatrix *a);
     bool _condition(const cond_type cond);
-    void _fx_elements1(GodotGSLMatrix *out);
-    void _fx_elements2(GodotGSLMatrix *a, GodotGSLMatrix *out);
+    void _fx_elements1(GodotGSLMatrix *out, GGSL_BOUNDS *bounds);
+    void _fx_elements2(GodotGSLMatrix *a, GodotGSLMatrix *out, GGSL_BOUNDS *bounds);
     gsl_permutation *perm = NULL;
     DTYPE *lu_fact = NULL;
     Object **objects = NULL;

@@ -3,6 +3,8 @@
 
 #include "godot_gsl_matrix.h"
 
+#define MAX_ARG_COUNT 3
+
 class GodotGSLFunction
 {
 public:
@@ -51,14 +53,14 @@ public:
             {
                 GodotGSLMatrix *mtx_a = argv[0];
                 GodotGSLMatrix *mtx_to = argv[1];
-                mtx_a->fx(name, mtx_to, argv_bounds);
+                mtx_a->fx(name, mtx_to, &argv_bounds[0]);
             }
             else if (argc == 3)
             {
                 GodotGSLMatrix *mtx_a = argv[0];
                 GodotGSLMatrix *mtx_b = argv[1];
                 GodotGSLMatrix *mtx_to = argv[2];
-                mtx_a->fx(name, mtx_b, mtx_to, argv_bounds);
+                mtx_a->fx(name, mtx_b, mtx_to, &argv_bounds[0]);
             }
             else
             {
@@ -73,7 +75,7 @@ public:
         String name;
         size_t argc;
         GodotGSLMatrix **argv = NULL;
-        GGSL_BOUNDS *argv_bounds;
+        GGSL_BOUNDS argv_bounds[MAX_ARG_COUNT];
     };
 
     GodotGSLFunction() { }

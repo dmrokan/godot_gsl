@@ -7,7 +7,7 @@ void GodotGSL::_bind_methods()
     ClassDB::bind_method(D_METHOD("matrix_new", "vn", "row_count", "col_count"), &GodotGSL::matrix_new);
     ClassDB::bind_method(D_METHOD("matrix_new_from_array", "vn", "a"), &GodotGSL::matrix_new_from_array);
     ClassDB::bind_method(D_METHOD("add", "vn1", "vn2"), &GodotGSL::add);
-    ClassDB::bind_method(D_METHOD("to_array", "vn"), &GodotGSL::to_array);
+    ClassDB::bind_method(D_METHOD("to_array", "vn", "row_interval", "col_interval"), &GodotGSL::to_array, "", Array(), Array());
     ClassDB::bind_method(D_METHOD("set_zero", "vn"), &GodotGSL::set_zero);
     ClassDB::bind_method(D_METHOD("prod", "vn1", "vn2", "to"), &GodotGSL::prod);
     ClassDB::bind_method(D_METHOD("vector_new", "vn", "size", "is_row_vector"), &GodotGSL::vector_new, NULL, NULL, false);
@@ -25,6 +25,7 @@ void GodotGSL::_bind_methods()
     ClassDB::bind_method(D_METHOD("ode_run_delta", "on", "dt"), &GodotGSL::ode_run_delta);
     ClassDB::bind_method(D_METHOD("matrix_set_identity", "vn"), &GodotGSL::matrix_set_identity);
     ClassDB::bind_method(D_METHOD("matrix_set", "vn", "row", "col", "value"), &GodotGSL::matrix_set);
+    ClassDB::bind_method(D_METHOD("matrix_set_from_array", "vn", "row_interval", "col_interval", "value"), &GodotGSL::matrix_set_from_array);
     ClassDB::bind_method(D_METHOD("matrix_get", "vn", "row", "col"), &GodotGSL::matrix_get);
 }
 
@@ -74,7 +75,7 @@ void GodotGSL::add(String vn1, String vn2)
     GodotGSLMatrix *mtx1 = variables[vn1];
     GodotGSLMatrix *mtx2 = variables[vn2];
 
-    mtx1->add(*mtx2, NULL);
+    mtx1->add(mtx2, NULL);
 }
 
 void GodotGSL::set_zero(String vn)
@@ -84,12 +85,54 @@ void GodotGSL::set_zero(String vn)
     mtx->set_zero();
 }
 
-Array GodotGSL::to_array(String vn)
+Array GodotGSL::to_array(String vn, const Array row_interval, const Array col_interval)
 {
-    GodotGSLMatrix *mtx = variables[vn];
+    GodotGSLMatrix *mtx;
+    GGSL_HAS_V(variables, vn, mtx, Array());
 
-    size_t row_count = mtx->size[0];
-    size_t col_count = mtx->size[1];
+    GGSL_BOUNDS bounds;
+    if (row_interval.empty())
+    {
+        bounds.r1 = 0;
+        bounds.r2 = mtx->size[0];
+    }
+    else
+    {
+        bounds.r1 = row_interval[0];
+        bounds.r2 = row_interval[1];
+
+        if (bounds.r1 > bounds.r2)
+        {
+            GGSL_ERR_MESSAGE("GodotGSL::to_array: bounds.r1 > bounds.r2");
+            return Array();
+        }
+    }
+
+    if (col_interval.empty())
+    {
+        bounds.c1 = 0;
+        bounds.c2 = mtx->size[1];
+    }
+    else
+    {
+        bounds.c1 = col_interval[0];
+        bounds.c2 = col_interval[1];
+
+        if (bounds.c1 > bounds.c2)
+        {
+            GGSL_ERR_MESSAGE("GodotGSL::to_array: bounds.c1 > bounds.c2");
+            return Array();
+        }
+    }
+
+    if (!mtx->is_bounds_included(bounds))
+    {
+        GGSL_ERR_MESSAGE("GodotGSL::to_array: !mtx->is_bounds_included(bounds)");
+        return Array();
+    }
+
+    size_t row_count = bounds.r2 - bounds.r1;
+    size_t col_count = bounds.c2 - bounds.c1;
 
     Array rows;
     for (size_t k = 0; k < row_count; k++)
@@ -97,7 +140,7 @@ Array GodotGSL::to_array(String vn)
         Array row;
         for (size_t l = 0; l < col_count; l++)
         {
-            row.append(mtx->get(k, l));
+            row.append(mtx->get(k + bounds.r1, l + bounds.r2));
         }
 
         rows.append(row);
@@ -251,32 +294,22 @@ void GodotGSL::function(const String fn, const Array args)
         for (int k = 0; k < size; k++)
         {
             String vn = args[k];
-            // int sindex = vn.find_char('[');
-            // if (sindex < 0)
-            // {
-            //     sindex = vn.size();
-            // }
-
-            // vn = vn.substr(0, sindex);
             if (variables.has(vn))
             {
                 argv[k] = variables[vn];
-                GGSL_DEBUG_MSG(vn.utf8().get_data(), 1);
             }
             else
             {
                 GGSL_MESSAGE("GodotGSL::function: !variables.has(vn)");
-                GGSL_MESSAGE_I(vn.utf8().get_data(), 1);
+                GGSL_MESSAGE(vn.utf8().get_data());
                 return;
             }
         }
 
         fnc->add_arguments(args, argv);
-        GGSL_DEBUG_MSG("GodotGSL::function: args are added", 0);
     }
 
     current = fnc;
-    GGSL_DEBUG_MSG("GodotGSL::function: procedure ends", 0);
 }
 
 void GodotGSL::instruction(const String in, const Array args)
@@ -288,7 +321,6 @@ void GodotGSL::instruction(const String in, const Array args)
     }
 
     current->add_instruction(in, args);
-    GGSL_DEBUG_MSG("GodotGSL::instruction: procedure ends", 0);
 }
 
 void GodotGSL::callf(const String fn)
@@ -442,6 +474,61 @@ void GodotGSL::matrix_set(const String vn, int row, int col, STYPE value)
     GGSL_HAS(variables, vn, mtx);
 
     mtx->set(row, col, value);
+}
+
+void GodotGSL::matrix_set_from_array(const String vn, const Array row_interval, const Array col_interval, const Array arr)
+{
+    GodotGSLMatrix *mtx;
+    GGSL_HAS(variables, vn, mtx);
+
+    if (row_interval.size() != 2 || col_interval.size() != 2)
+    {
+        GGSL_ERR_MESSAGE("GodotGSL::matrix_set_from_array: row_interval.size() != 2 || col_interval.size() != 2");
+        return;
+    }
+
+    int row1 = row_interval[0];
+    int row2 = row_interval[1];
+    int col1 = col_interval[0];
+    int col2 = col_interval[1];
+
+    if (row1 > row2 || col1 > col2)
+    {
+        GGSL_ERR_MESSAGE("GodotGSL::matrix_set_from_array: row1 > row2 || col1 > col2");
+        return;
+    }
+
+    if (arr.size() == 0 || arr[0].get_type() != Variant::ARRAY)
+    {
+        GGSL_ERR_MESSAGE("GodotGSL::matrix_set_from_array: arr.size() == 0 || arr[0].get_type() != Variant::ARRAY");
+        return;
+    }
+
+    GGSL_BOUNDS bounds;
+    bounds.r1 = row_interval[0];
+    bounds.r2 = row_interval[1];
+    bounds.c1 = col_interval[0];
+    bounds.c2 = col_interval[1];
+
+    mtx->set_from_array(bounds, arr);
+}
+
+void GodotGSL::vector_set_from_array(const String vn, const Array row_interval, const Array arr)
+{
+    Array mtx_arr;
+
+    for (int k = 0; k < arr.size(); k++)
+    {
+        Array row;
+        row.append(arr[k]);
+        mtx_arr.append(row);
+    }
+
+    Array col_interval;
+    col_interval.append(0);
+    col_interval.append(1);
+
+    matrix_set_from_array(vn, row_interval, col_interval, mtx_arr);
 }
 
 STYPE GodotGSL::matrix_get(const String vn, int row, int col)

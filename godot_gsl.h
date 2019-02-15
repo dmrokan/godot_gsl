@@ -19,7 +19,7 @@ public:
     void matrix_new(String vn, const size_t row_count, const size_t col_count);
     void matrix_new_from_array(String vn, const Array a);
     void add(String vn1, String vn2);
-    Array to_array(String vn);
+    Array to_array(String vn, const Array row_interval, const Array col_interval);
     void set_zero(String vn);
     void prod(String vn1, String vn2, String to);
     void vector_new(String vn, const size_t size, bool is_row_vector);
@@ -38,6 +38,8 @@ public:
     void ode_set_node_path_as_input(const String on, Variant obj_var, const String subpath, const String vn, const int index);
     void matrix_set(const String vn, int row, int col, STYPE value);
     STYPE matrix_get(const String vn, int row, int col);
+    void matrix_set_from_array(const String vn, const Array row_interval, const Array col_interval, const Array arr);
+    void vector_set_from_array(const String vn, const Array row_interval, const Array arr);
 
 private:
     void _add_variable(String vn, GodotGSLMatrix* mtx);

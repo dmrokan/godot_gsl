@@ -268,21 +268,21 @@ void GodotGSLMatrix::set_identity()
     gsl_matrix_set_identity(gsl_mtx);
 }
 
-int GodotGSLMatrix::add(const GodotGSLMatrix &a, GGSL_BOUNDS *bounds)
+int GodotGSLMatrix::add(const GodotGSLMatrix *a, GGSL_BOUNDS *bounds)
 {
     if (gsl_mtx == NULL)
     {
         ERR_FAIL_COND_V("GodotGSLMatrix::add: gsl_mtx == NULL", ERR_NULL_VALUE);
     }
 
-    if (size[0] != a.size[0] || size[1] != a.size[1])
+    if (size[0] != a->size[0] || size[1] != a->size[1])
     {
         ERR_FAIL_COND_V("GodotGSLMatrix::add: size[0] != a.size[0] || size[1] != a.size[1]", ERR_DIMENSION_MISMATCH);
     }
 
-    if (a.type == GSL_SCALER && type == GSL_SCALER)
+    if (a->type == GSL_SCALER && type == GSL_SCALER)
     {
-        *gsl_scalar += *(a.gsl_scalar);
+        *gsl_scalar += *(a->gsl_scalar);
     }
     else
     {
@@ -294,7 +294,7 @@ int GodotGSLMatrix::add(const GodotGSLMatrix &a, GGSL_BOUNDS *bounds)
             for (size_t l = 0; l < col_count; l++)
             {
                 STYPE val = gsl_matrix_get(gsl_mtx, k + bounds[0].r1, l + bounds[0].c1)
-                    + gsl_matrix_get(a.get_ptr(), k + bounds[1].r1, l + bounds[1].c1);
+                    + gsl_matrix_get(a->get_ptr(), k + bounds[1].r1, l + bounds[1].c1);
 
                 gsl_matrix_set(gsl_mtx, k + bounds[0].r1, l + bounds[0].c1, val);
             }
@@ -500,122 +500,114 @@ void GodotGSLMatrix::fx(const String fn, GodotGSLMatrix *a, GodotGSLMatrix *to, 
     if (fn == FN_SIN)
     {
         math_func1 = sin;
-        _fx_elements1(to);
+        _fx_elements1(to, bounds);
         return;
     }
     else if (fn == FN_COS)
     {
         math_func1 = cos;
-        _fx_elements1(to);
+        _fx_elements1(to, bounds);
         return;
     }
     else if (fn == FN_TAN)
     {
         math_func1 = tan;
-        _fx_elements1(to);
+        _fx_elements1(to, bounds);
         return;
     }
     else if (fn == FN_EXP)
     {
         math_func1 = exp;
-        _fx_elements1(to);
+        _fx_elements1(to, bounds);
         return;
     }
     else if (fn == FN_LOG)
     {
         math_func1 = log;
-        _fx_elements1(to);
+        _fx_elements1(to, bounds);
         return;
     }
     else if (fn == FN_LOG10)
     {
         math_func1 = log10;
-        _fx_elements1(to);
+        _fx_elements1(to, bounds);
         return;
     }
     else if (fn == FN_SQRT)
     {
         math_func1 = sqrt;
-        _fx_elements1(to);
+        _fx_elements1(to, bounds);
         return;
     }
     else if (fn == FN_COSH)
     {
         math_func1 = cosh;
-        _fx_elements1(to);
+        _fx_elements1(to, bounds);
         return;
     }
     else if (fn == FN_SINH)
     {
         math_func1 = sinh;
-        _fx_elements1(to);
+        _fx_elements1(to, bounds);
         return;
     }
     else if (fn == FN_FLOOR)
     {
         math_func1 = floor;
-        _fx_elements1(to);
+        _fx_elements1(to, bounds);
         return;
     }
     else if (fn == FN_ROUND)
     {
         math_func1 = round;
-        _fx_elements1(to);
+        _fx_elements1(to, bounds);
         return;
     }
     else if (fn == FN_CEIL)
     {
         math_func1 = ceil;
-        _fx_elements1(to);
-        return;
-    }
-    else if (fn == FN_ADD)
-    {
-        if (this != to)
-        {
-            this->copy(to);
-        }
-        else if (!_condition(EQUAL_SIZE, to))
-        {
-            return;
-        }
-
-        to->add(*a, bounds);
-        return;
-    }
-    else if (fn == FN_SUB)
-    {
-        math_func2 = ggsl_math_sub;
-        _fx_elements2(a, to);
-        return;
-    }
-    else if (fn == FN_MUL_EL)
-    {
-        math_func2 = ggsl_math_mul_el;
-        _fx_elements2(a, to);
-        return;
-    }
-    else if (fn == FN_DIV_EL)
-    {
-        math_func2 = ggsl_math_div_el;
-        _fx_elements2(a, to);
-        return;
-    }
-    else if (fn == FN_POW_EL)
-    {
-        math_func2 = ggsl_math_pow_el;
-        _fx_elements2(a, to);
-        return;
-    }
-    else if (fn == FN_MUL)
-    {
-        prod(*a, to, bounds);
+        _fx_elements1(to, bounds);
         return;
     }
     else if (fn == FN_EQ)
     {
         math_func1 = ggsl_math_eq;
-        _fx_elements1(to);
+        _fx_elements1(to, bounds);
+        return;
+    }
+    else if (fn == FN_ADD)
+    {
+        math_func2 = ggsl_math_add;
+        _fx_elements2(a, to, bounds);
+        return;
+    }
+    else if (fn == FN_SUB)
+    {
+        math_func2 = ggsl_math_sub;
+        _fx_elements2(a, to, bounds);
+        return;
+    }
+    else if (fn == FN_MUL_EL)
+    {
+        math_func2 = ggsl_math_mul_el;
+        _fx_elements2(a, to, bounds);
+        return;
+    }
+    else if (fn == FN_DIV_EL)
+    {
+        math_func2 = ggsl_math_div_el;
+        _fx_elements2(a, to, bounds);
+        return;
+    }
+    else if (fn == FN_POW_EL)
+    {
+        math_func2 = ggsl_math_pow_el;
+        _fx_elements2(a, to, bounds);
+        return;
+    }
+    else if (fn == FN_MUL)
+    {
+        prod(*a, to, bounds);
         return;
     }
     else if (fn == FN_INV)
@@ -627,7 +619,8 @@ void GodotGSLMatrix::fx(const String fn, GodotGSLMatrix *a, GodotGSLMatrix *to, 
 
 void GodotGSLMatrix::fx(const String fn, GodotGSLMatrix *a, GGSL_BOUNDS *bounds)
 {
-    fx(fn, a, this, bounds);
+    bounds[2] = bounds[1];
+    fx(fn, a, a, bounds);
 }
 
 void GodotGSLMatrix::fx(const String fn, GGSL_BOUNDS *bounds)
@@ -635,7 +628,7 @@ void GodotGSLMatrix::fx(const String fn, GGSL_BOUNDS *bounds)
     fx(fn, NULL, this, bounds);
 }
 
-void GodotGSLMatrix::_fx_elements1(GodotGSLMatrix *out)
+void GodotGSLMatrix::_fx_elements1(GodotGSLMatrix *out, GGSL_BOUNDS *bounds)
 {
     if (math_func1 == NULL)
     {
@@ -646,16 +639,16 @@ void GodotGSLMatrix::_fx_elements1(GodotGSLMatrix *out)
     {
         for (size_t l = 0; l < size[1]; l++)
         {
-            STYPE val = get(k + bounds.r1, l + bounds.c1);
+            STYPE val = get(k + bounds[0].r1, l + bounds[0].c1);
             val = math_func1(val);
-            out->set(k + out->bounds.r1, l + out->bounds.c1, val);
+            out->set(k + bounds[1].r1, l + bounds[1].c1, val);
         }
     }
 
     math_func1 = NULL;
 }
 
-void GodotGSLMatrix::_fx_elements2(GodotGSLMatrix *a, GodotGSLMatrix *out)
+void GodotGSLMatrix::_fx_elements2(GodotGSLMatrix *a, GodotGSLMatrix *out, GGSL_BOUNDS *bounds)
 {
     if (math_func2 == NULL)
     {
@@ -666,10 +659,10 @@ void GodotGSLMatrix::_fx_elements2(GodotGSLMatrix *a, GodotGSLMatrix *out)
     {
         for (size_t l = 0; l < size[1]; l++)
         {
-            STYPE val1 = get(k + bounds.r1, l + bounds.c1);
-            STYPE val2 = a->get(k + a->bounds.r1, l + a->bounds.c1);
+            STYPE val1 = get(k + bounds[0].r1, l + bounds[0].c1);
+            STYPE val2 = a->get(k + bounds[1].r1, l + bounds[1].c1);
             val1 = math_func2(val1, val2);
-            out->set(k + out->bounds.r1, l + out->bounds.c1, val1);
+            out->set(k + bounds[2].r1, l + bounds[2].c1, val1);
         }
     }
 
@@ -823,5 +816,56 @@ void GodotGSLMatrix::update_node_properties()
             double value = obj->get_indexed(key, &valid);
             set(index, 0, value);
         }
+    }
+}
+
+void GodotGSLMatrix::set_from_array(const GGSL_BOUNDS &bounds, const Array &arr)
+{
+    if (bounds.r1 < 0 || bounds.r2 >= size[0]
+        || bounds.c1 < 0 || bounds.c2 >= size[1])
+    {
+        GGSL_ERR_MESSAGE("GodotGSLMatrix::set_from_array: bounds.r1 < 0 || bounds.r2 >= size[0] || bounds.c1 < 0 || bounds.c2 >= size[1]");
+        return;
+    }
+
+    int row_count = arr.size();
+
+    if (row_count != bounds.r2 - bounds.r1)
+    {
+        GGSL_ERR_MESSAGE("GodotGSLMatrix::set_from_array: row_count >= bounds.r2 - bounds.r1");
+        return;
+    }
+
+    for (int k = 0; k < row_count; k++)
+    {
+        Array row = arr[0];
+        int col_count = row.size();
+        if (col_count != bounds.c2 - bounds.c1)
+        {
+            GGSL_ERR_MESSAGE("GodotGSLMatrix::set_from_array: col_count >= bounds.c2 - bounds.c1");
+            return;
+        }
+
+        for (int l = 0; l < col_count; l++)
+        {
+            int k_mtx = k + bounds.r1;
+            int l_mtx = l + bounds.c1;
+            set(k_mtx, l_mtx, row[l]);
+        }
+    }
+}
+
+bool GodotGSLMatrix::is_bounds_included(GGSL_BOUNDS &bounds)
+{
+    if ((bounds.r1 >= 0 && bounds.r1 < size[0])
+        && (bounds.r2 >= 0 && bounds.r2 <= size[0])
+        && (bounds.c1 >= 0 && bounds.c1 < size[1])
+        && (bounds.c2 >= 0 && bounds.c2 <= size[1]))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }
