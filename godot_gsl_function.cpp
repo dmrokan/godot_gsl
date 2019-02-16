@@ -238,6 +238,11 @@ void GodotGSLFunction::set_instruction_arguments(GodotGSLInstruction *ins, Array
             ins->argv[k] = argv[index];
             GodotGSLMatrix *argv_mtx = argv[index];
             GGSL_BOUNDS bounds = argv_bounds_parse(arg, argv_mtx->size);
+            if (!argv_mtx->is_bounds_included(bounds))
+            {
+                GGSL_ERR_MESSAGE("GodotGSLFunction::set_instruction_arguments: !argv_mtx->is_bounds_included(bounds)");
+                return;
+            }
             /* TODO: memcpy may no be the right wway to do this */
             GGSL_ARGV_BOUNDS_SET(ins->argv_bounds, &bounds, k);
         }

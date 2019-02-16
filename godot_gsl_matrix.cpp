@@ -3,6 +3,10 @@
 void gsl_no_blas_gemv(CBLAS_TRANSPOSE_t tr, DTYPE *mtx, VTYPE *vec, VTYPE *out,
                       GGSL_BOUNDS &bounds_mtx, GGSL_BOUNDS &bounds_vec, GGSL_BOUNDS &bounds_out)
 {
+    /*
+     * TODO: Implement transposed version
+     */
+    size_t row_count, col_count;
     if (tr == CblasNoTrans)
     {
         if (bounds_mtx.c2 - bounds_mtx.c1 != bounds_vec.r2 - bounds_vec.r1)
@@ -10,6 +14,8 @@ void gsl_no_blas_gemv(CBLAS_TRANSPOSE_t tr, DTYPE *mtx, VTYPE *vec, VTYPE *out,
             GGSL_MESSAGE("gls_no_blas_gemv: bounds_mtx[3] - bounds_mtx[2] != bounds_vec[1] - bounds_vec[0]");
             return;
         }
+        row_count = bounds_vec.r2 - bounds_vec.r1;
+        col_count = bounds_mtx.c2 - bounds_vec.c1;
     }
     else if (tr == CblasTrans)
     {
@@ -18,19 +24,22 @@ void gsl_no_blas_gemv(CBLAS_TRANSPOSE_t tr, DTYPE *mtx, VTYPE *vec, VTYPE *out,
             GGSL_MESSAGE("gls_no_blas_gemv: bounds_mtx[1] - bounds_mtx[0] != bounds_vec[1] - bounds_vec[0]");
             return;
         }
+        col_count = bounds_vec.c2 - bounds_vec.c1;
+        row_count = bounds_mtx.r2 - bounds_vec.r1;
     }
 
-    for (size_t k = bounds_mtx.r1; k < bounds_mtx.r2; k++)
+    for (size_t k = 0; k < row_count; k++)
     {
         double res = 0.0;
 
-        for (size_t l = bounds_mtx.c1; l < bounds_mtx.c2; l++)
+        for (size_t l = 0; l < col_count; l++)
         {
             double val_mtx, val_vec;
+            printf("hjufsuheuue %lu %lu\n", bounds_mtx.r1, bounds_mtx.c1);
             if (tr == CblasNoTrans)
             {
-                val_mtx = gsl_matrix_get(mtx, k, l);
-                val_vec = gsl_vector_get(vec, l);
+                val_mtx = gsl_matrix_get(mtx, k + bounds_mtx.r1, l + bounds_mtx.c1);
+                val_vec = gsl_vector_get(vec, l + bounds_vec.r1);
             }
             else if (tr == CblasTrans)
             {
@@ -49,6 +58,9 @@ void gsl_no_blas_gemm(CBLAS_TRANSPOSE_t tr, CBLAS_TRANSPOSE_t tr2,
                       DTYPE *mtx1, DTYPE *mtx2, DTYPE *out,
                       GGSL_BOUNDS &bounds_mtx1, GGSL_BOUNDS &bounds_mtx2, GGSL_BOUNDS &bounds_out)
 {
+    /*
+     * TODO: Implement transposed version
+     */
     size_t row_count = 0;
     size_t col_count = 0;
     size_t prod_count = 0;
@@ -625,7 +637,8 @@ void GodotGSLMatrix::fx(const String fn, GodotGSLMatrix *a, GGSL_BOUNDS *bounds)
 
 void GodotGSLMatrix::fx(const String fn, GGSL_BOUNDS *bounds)
 {
-    fx(fn, NULL, this, bounds);
+    bounds[2] = bounds[1] = bounds[0];
+    fx(fn, this, bounds);
 }
 
 void GodotGSLMatrix::_fx_elements1(GodotGSLMatrix *out, GGSL_BOUNDS *bounds)
@@ -635,9 +648,12 @@ void GodotGSLMatrix::_fx_elements1(GodotGSLMatrix *out, GGSL_BOUNDS *bounds)
         ERR_FAIL_COND("GodotGSLMatrix::_fx_elements1: math_func1 == NULL");
     }
 
-    for (size_t k = 0; k < size[0]; k++)
+    size_t row_count = bounds[0].r2 - bounds[0].r1;
+    size_t col_count = bounds[0].c2 - bounds[0].c1;
+
+    for (size_t k = 0; k < row_count; k++)
     {
-        for (size_t l = 0; l < size[1]; l++)
+        for (size_t l = 0; l < col_count; l++)
         {
             STYPE val = get(k + bounds[0].r1, l + bounds[0].c1);
             val = math_func1(val);
@@ -655,13 +671,17 @@ void GodotGSLMatrix::_fx_elements2(GodotGSLMatrix *a, GodotGSLMatrix *out, GGSL_
         ERR_FAIL_COND("GodotGSLMatrix::_fx_elements1: math_func1 == NULL");
     }
 
-    for (size_t k = 0; k < size[0]; k++)
+    size_t row_count = bounds[0].r2 - bounds[0].r1;
+    size_t col_count = bounds[0].c2 - bounds[0].c1;
+
+    for (size_t k = 0; k < row_count; k++)
     {
-        for (size_t l = 0; l < size[1]; l++)
+        for (size_t l = 0; l < col_count; l++)
         {
             STYPE val1 = get(k + bounds[0].r1, l + bounds[0].c1);
             STYPE val2 = a->get(k + bounds[1].r1, l + bounds[1].c1);
             val1 = math_func2(val1, val2);
+            printf("fsgawqrqreqrwq %d %d\n", bounds[2].r1, bounds[2].c1);
             out->set(k + bounds[2].r1, l + bounds[2].c1, val1);
         }
     }

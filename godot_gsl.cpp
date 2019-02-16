@@ -140,7 +140,7 @@ Array GodotGSL::to_array(String vn, const Array row_interval, const Array col_in
         Array row;
         for (size_t l = 0; l < col_count; l++)
         {
-            row.append(mtx->get(k + bounds.r1, l + bounds.r2));
+            row.append(mtx->get(k + bounds.r1, l + bounds.c1));
         }
 
         rows.append(row);

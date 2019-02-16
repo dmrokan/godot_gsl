@@ -49,7 +49,12 @@ public:
 
         void execute()
         {
-            if (argc == 2)
+            if (argc == 1)
+            {
+                GodotGSLMatrix *mtx_a = argv[0];
+                mtx_a->fx(name, &argv_bounds[0]);
+            }
+            else if (argc == 2)
             {
                 GodotGSLMatrix *mtx_a = argv[0];
                 GodotGSLMatrix *mtx_to = argv[1];
