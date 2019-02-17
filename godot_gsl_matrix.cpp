@@ -14,8 +14,8 @@ void gsl_no_blas_gemv(CBLAS_TRANSPOSE_t tr, DTYPE *mtx, VTYPE *vec, VTYPE *out,
             GGSL_MESSAGE("gls_no_blas_gemv: bounds_mtx[3] - bounds_mtx[2] != bounds_vec[1] - bounds_vec[0]");
             return;
         }
-        row_count = bounds_vec.r2 - bounds_vec.r1;
-        col_count = bounds_mtx.c2 - bounds_vec.c1;
+        row_count = bounds_mtx.r2 - bounds_mtx.r1;
+        col_count = bounds_mtx.c2 - bounds_mtx.c1;
     }
     else if (tr == CblasTrans)
     {
@@ -24,8 +24,8 @@ void gsl_no_blas_gemv(CBLAS_TRANSPOSE_t tr, DTYPE *mtx, VTYPE *vec, VTYPE *out,
             GGSL_MESSAGE("gls_no_blas_gemv: bounds_mtx[1] - bounds_mtx[0] != bounds_vec[1] - bounds_vec[0]");
             return;
         }
-        col_count = bounds_vec.c2 - bounds_vec.c1;
-        row_count = bounds_mtx.r2 - bounds_vec.r1;
+        col_count = bounds_mtx.c2 - bounds_mtx.c1;
+        row_count = bounds_mtx.r2 - bounds_mtx.r1;
     }
 
     for (size_t k = 0; k < row_count; k++)
@@ -35,7 +35,7 @@ void gsl_no_blas_gemv(CBLAS_TRANSPOSE_t tr, DTYPE *mtx, VTYPE *vec, VTYPE *out,
         for (size_t l = 0; l < col_count; l++)
         {
             double val_mtx, val_vec;
-            printf("hjufsuheuue %lu %lu\n", bounds_mtx.r1, bounds_mtx.c1);
+
             if (tr == CblasNoTrans)
             {
                 val_mtx = gsl_matrix_get(mtx, k + bounds_mtx.r1, l + bounds_mtx.c1);
@@ -681,7 +681,6 @@ void GodotGSLMatrix::_fx_elements2(GodotGSLMatrix *a, GodotGSLMatrix *out, GGSL_
             STYPE val1 = get(k + bounds[0].r1, l + bounds[0].c1);
             STYPE val2 = a->get(k + bounds[1].r1, l + bounds[1].c1);
             val1 = math_func2(val1, val2);
-            printf("fsgawqrqreqrwq %d %d\n", bounds[2].r1, bounds[2].c1);
             out->set(k + bounds[2].r1, l + bounds[2].c1, val1);
         }
     }
