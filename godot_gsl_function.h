@@ -4,6 +4,8 @@
 #include "godot_gsl_matrix.h"
 
 #define MAX_ARG_COUNT 3
+#define INITIAL_ARGV_COUNT 8
+#define INITIAL_INS_COUNT 16
 
 class GodotGSLFunction
 {
@@ -20,9 +22,12 @@ public:
 
         ~GodotGSLInstruction()
         {
-            if (argv != NULL)
+            for (int k = 0; k < MAX_ARG_COUNT; k++)
             {
-                GGSL_FREE(argv);
+                if (argv[k] != NULL)
+                {
+                    memdelete(argv[k]);
+                }
             }
         }
 
@@ -79,7 +84,7 @@ public:
         GodotGSLInstruction *nxt = NULL;
         String name;
         size_t argc;
-        GodotGSLMatrix **argv = NULL;
+        GodotGSLMatrix *argv[MAX_ARG_COUNT] = { NULL };
         GGSL_BOUNDS argv_bounds[MAX_ARG_COUNT];
     };
 
@@ -100,8 +105,10 @@ public:
 private:
     Array arg_names;
     String name;
-    GodotGSLMatrix **argv = NULL;
-    GodotGSLInstruction **instructions = NULL;
+    GodotGSLMatrix *argv[INITIAL_ARGV_COUNT] = { NULL };
+    GodotGSLInstruction *instructions[INITIAL_INS_COUNT] = { NULL };
+    size_t argv_buffer_size = INITIAL_ARGV_COUNT;
+    size_t instruction_buffer_size = INITIAL_INS_COUNT;
     size_t instruction_count = 0;
     size_t argc = 0;
     GodotGSLInstruction *current = NULL;
