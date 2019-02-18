@@ -441,32 +441,6 @@ void GodotGSLMatrix::prod(GodotGSLMatrix &a, GodotGSLMatrix *to, GGSL_BOUNDS *bo
         prod_type = MATRIX_VECTOR_PROD;
     }
 
-    if (gsl_mtx == NULL)
-    {
-        GGSL_MESSAGE("GodotGSLMatrix::prod: gsl_mtx == NULL");
-    }
-
-    if (prod_type == MATRIX_VECTOR_PROD)
-    {
-        if (size[1] != a.size[0])
-        {
-            GGSL_MESSAGE("GodotGSLMatrix::prod: size[0] != a.size[1]");
-        }
-    }
-    else
-    {
-        if (size[0] != a.size[1] || size[1] != a.size[0])
-        {
-            GGSL_MESSAGE("GodotGSLMatrix::prod: size[0] != a.size[1] || size[1] != a.size[0]");
-        }
-    }
-
-    if (to == NULL)
-    {
-        to = memnew(GodotGSLMatrix);
-        to->init(a.size[0], size[1]);
-    }
-
     if (prod_type == MATRIX_VECTOR_PROD)
     {
         if (type == GSL_VECTOR)
