@@ -1,0 +1,3 @@
+[submodule "gsl4godot_gsl"]
+	path = gsl4godot_gsl
+	url = git@github.com:dmrokan/gsl4godot_gsl.git

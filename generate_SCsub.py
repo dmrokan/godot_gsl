@@ -7,6 +7,12 @@ excluded_dir_names = [
     , 'doc_texinfo'
     , 'test'
     , '.git'
+    , 'spmatrix'
+    , 'spblas'
+    , 'integration'
+    , 'roots'
+    , 'specfunc'
+    , 'rstat'
 ]
 
 def source_dirs(root_dir, dir_list, cwd='./'):
@@ -25,7 +31,7 @@ def source_dirs(root_dir, dir_list, cwd='./'):
 def scons_paths(fh, dirs):
     fh.write('scons_paths = [\n')
     fh.write('    \'.\'\n')
-    fh.write('    \'gsl_src\'\n')
+    fh.write('    \'gsl4godot_gsl\'\n')
     fh.write('    , \'gsl_src/build/\'\n')
 
     for d in dirs:
@@ -162,6 +168,10 @@ def SCsub(root_dir):
         scons_sources(sc, dir_list)
 
         sc.write('env_godot_gsl = env\n')
+        sc.write('env_godot_gsl.Command(\'\', \'\', \'cd gsl4godot_gsl\')\n')
+        sc.write('env_godot_gsl.Command(\'\', \'\', \'./autogen.sh\')\n')
+        sc.write('env_godot_gsl.Command(\'\', \'\', \'./configure\')\n')
+        sc.write('env_godot_gsl.Command(\'\', \'\', \'cd ..\')\n')
         sc.write('env_godot_gsl.Append(CXXFLAGS=[\'-g\'])\n')
         sc.write('env_godot_gsl.Append(CPPPATH=scons_paths)\n')
         sc.write('env_godot_gsl.add_source_files(env.modules_sources, scons_sources)')
