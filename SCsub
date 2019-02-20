@@ -1,0 +1,326 @@
+#!/usr/bin/env python
+# SCsub
+import re
+import os
+Import('env')
+
+excluded_files = [
+    'common.c'
+    , 'apply_givens.c'
+    , 'cholesky_common.c'
+    , 'svdstep.c'
+    , 'lmiterate.c'
+    , 'lmmisc.c'
+    , 'lmpar.c'
+    , 'lmset.c'
+    , 'linear_common.c'
+    , 'qrsolv.c'
+    , 'hypot.c'
+    , 'tests.c'
+    , 'urand.c'
+    , 'c_init.c'
+    , 'c_main.c'
+    , 'bitreverse.c'
+    , 'c_radix2.c'
+    , 'bitreverse.c'
+    , 'factorize.c'
+    , 'hc_init.c'
+    , 'hc_main.c'
+    , 'hc_radix2.c'
+    , 'hc_unpack.c'
+    , 'real_init.c'
+    , 'real_main.c'
+    , 'real_radix2.c'
+    , 'real_unpack.c'
+    , 'linear_minimize.c'
+    , 'linear_wrapper.c'
+    , 'directional_minimize.c'
+    , 'find.c'
+    , 'find2d.c'
+    , 'qrstep.c'
+    , 'beta_inc.c'
+    , 'testint.c'
+    , 'ringbuf.c'
+    , 'deque.c'
+    , 'cquad_const.c'
+    , 'initialise.c'
+    , 'append.c'
+    , 'set_initial.c'
+    , 'qpsrt.c'
+    , 'util.c'
+    , 'qc25s.c'
+    , 'qc25c.c'
+    , 'qelg.c'
+    , 'err.c'
+    , 'reset.c'
+    , 'qpsrt2.c'
+    , 'positivity.c'
+    , 'qc25f.c'
+    , 'ptsort.c'
+    , 'companion.c'
+    , 'balance.c'
+    , 'qr.c'
+    , 'demof.c'
+    , 'nielsen.c'
+    , 'step_utils.c'
+    , 'control_utils.c'
+    , 'rksubs.c'
+    , 'modnewton1.c'
+    , 'cheb_eval.c'
+    , 'cheb_eval_mode.c'
+    , 'enorm.c'
+    , 'dogleg.c'
+    , 'test.c'
+    , 'endian.c'
+    , 'standardize.c'
+    , 'lmutil.c'
+    , 'hess.c'
+    , 'wigner.c'
+    , 'benchmark.c'
+    , 'errs.c'
+    , 'poly.c'
+    , 'testgen.c'
+    , 'norm.c'
+]
+
+scons_paths = [
+    '.'
+    'gsl4godot_gsl'
+    , 'gsl_src/build/'
+    , './examples/'
+    , './examples/LorenzAtt/'
+    , './examples/LorenzAtt/.import/'
+    , './gsl4godot_gsl/'
+    , './gsl4godot_gsl/multilarge_nlinear/'
+    , './gsl4godot_gsl/multilarge_nlinear/.deps/'
+    , './gsl4godot_gsl/err/'
+    , './gsl4godot_gsl/err/.deps/'
+    , './gsl4godot_gsl/dht/'
+    , './gsl4godot_gsl/dht/.deps/'
+    , './gsl4godot_gsl/splinalg/'
+    , './gsl4godot_gsl/splinalg/.deps/'
+    , './gsl4godot_gsl/linalg/'
+    , './gsl4godot_gsl/linalg/.deps/'
+    , './gsl4godot_gsl/multifit/'
+    , './gsl4godot_gsl/multifit/.deps/'
+    , './gsl4godot_gsl/interpolation/'
+    , './gsl4godot_gsl/interpolation/.deps/'
+    , './gsl4godot_gsl/siman/'
+    , './gsl4godot_gsl/siman/.deps/'
+    , './gsl4godot_gsl/diff/'
+    , './gsl4godot_gsl/diff/.deps/'
+    , './gsl4godot_gsl/contrib/'
+    , './gsl4godot_gsl/utils/'
+    , './gsl4godot_gsl/utils/.deps/'
+    , './gsl4godot_gsl/cheb/'
+    , './gsl4godot_gsl/cheb/.deps/'
+    , './gsl4godot_gsl/vector/'
+    , './gsl4godot_gsl/vector/.deps/'
+    , './gsl4godot_gsl/filter/'
+    , './gsl4godot_gsl/filter/.deps/'
+    , './gsl4godot_gsl/cblas/'
+    , './gsl4godot_gsl/cblas/.deps/'
+    , './gsl4godot_gsl/fit/'
+    , './gsl4godot_gsl/fit/.deps/'
+    , './gsl4godot_gsl/bst/'
+    , './gsl4godot_gsl/bst/.deps/'
+    , './gsl4godot_gsl/fft/'
+    , './gsl4godot_gsl/fft/.deps/'
+    , './gsl4godot_gsl/multimin/'
+    , './gsl4godot_gsl/multimin/.deps/'
+    , './gsl4godot_gsl/sort/'
+    , './gsl4godot_gsl/sort/.deps/'
+    , './gsl4godot_gsl/multiset/'
+    , './gsl4godot_gsl/multiset/.deps/'
+    , './gsl4godot_gsl/complex/'
+    , './gsl4godot_gsl/complex/.deps/'
+    , './gsl4godot_gsl/wavelet/'
+    , './gsl4godot_gsl/wavelet/.deps/'
+    , './gsl4godot_gsl/gsl/'
+    , './gsl4godot_gsl/rng/'
+    , './gsl4godot_gsl/rng/.deps/'
+    , './gsl4godot_gsl/permutation/'
+    , './gsl4godot_gsl/permutation/.deps/'
+    , './gsl4godot_gsl/qrng/'
+    , './gsl4godot_gsl/qrng/.deps/'
+    , './gsl4godot_gsl/sum/'
+    , './gsl4godot_gsl/sum/.deps/'
+    , './gsl4godot_gsl/histogram/'
+    , './gsl4godot_gsl/histogram/.deps/'
+    , './gsl4godot_gsl/eigen/'
+    , './gsl4godot_gsl/eigen/.deps/'
+    , './gsl4godot_gsl/cdf/'
+    , './gsl4godot_gsl/cdf/.deps/'
+    , './gsl4godot_gsl/min/'
+    , './gsl4godot_gsl/min/.deps/'
+    , './gsl4godot_gsl/movstat/'
+    , './gsl4godot_gsl/movstat/.deps/'
+    , './gsl4godot_gsl/poly/'
+    , './gsl4godot_gsl/poly/.deps/'
+    , './gsl4godot_gsl/multifit_nlinear/'
+    , './gsl4godot_gsl/multifit_nlinear/.deps/'
+    , './gsl4godot_gsl/const/'
+    , './gsl4godot_gsl/const/.deps/'
+    , './gsl4godot_gsl/ode-initval2/'
+    , './gsl4godot_gsl/ode-initval2/.deps/'
+    , './gsl4godot_gsl/statistics/'
+    , './gsl4godot_gsl/statistics/.deps/'
+    , './gsl4godot_gsl/multiroots/'
+    , './gsl4godot_gsl/multiroots/.deps/'
+    , './gsl4godot_gsl/ntuple/'
+    , './gsl4godot_gsl/ntuple/.deps/'
+    , './gsl4godot_gsl/matrix/'
+    , './gsl4godot_gsl/matrix/.deps/'
+    , './gsl4godot_gsl/monte/'
+    , './gsl4godot_gsl/monte/.deps/'
+    , './gsl4godot_gsl/.deps/'
+    , './gsl4godot_gsl/combination/'
+    , './gsl4godot_gsl/combination/.deps/'
+    , './gsl4godot_gsl/blas/'
+    , './gsl4godot_gsl/blas/.deps/'
+    , './gsl4godot_gsl/ode-initval/'
+    , './gsl4godot_gsl/ode-initval/.deps/'
+    , './gsl4godot_gsl/deriv/'
+    , './gsl4godot_gsl/deriv/.deps/'
+    , './gsl4godot_gsl/sys/'
+    , './gsl4godot_gsl/sys/.deps/'
+    , './gsl4godot_gsl/ieee-utils/'
+    , './gsl4godot_gsl/ieee-utils/.deps/'
+    , './gsl4godot_gsl/randist/'
+    , './gsl4godot_gsl/randist/.deps/'
+    , './gsl4godot_gsl/scripts/'
+    , './gsl4godot_gsl/multilarge/'
+    , './gsl4godot_gsl/multilarge/.deps/'
+    , './gsl4godot_gsl/block/'
+    , './gsl4godot_gsl/block/.deps/'
+    , './gsl4godot_gsl/bspline/'
+    , './gsl4godot_gsl/bspline/.deps/'
+]
+
+scons_sources = [
+    [x for x in Glob('./*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./examples/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./examples/LorenzAtt/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./examples/LorenzAtt/.import/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/multilarge_nlinear/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/multilarge_nlinear/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/err/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/err/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/dht/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/dht/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/splinalg/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/splinalg/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/linalg/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/linalg/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/multifit/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/multifit/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/interpolation/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/interpolation/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/siman/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/siman/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/diff/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/diff/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/contrib/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/utils/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/utils/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/cheb/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/cheb/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/vector/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/vector/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/filter/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/filter/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/cblas/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/cblas/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/fit/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/fit/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/bst/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/bst/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/fft/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/fft/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/multimin/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/multimin/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/sort/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/sort/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/multiset/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/multiset/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/complex/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/complex/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/wavelet/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/wavelet/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/gsl/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/rng/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/rng/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/permutation/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/permutation/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/qrng/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/qrng/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/sum/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/sum/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/histogram/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/histogram/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/eigen/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/eigen/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/cdf/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/cdf/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/min/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/min/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/movstat/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/movstat/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/poly/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/poly/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/multifit_nlinear/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/multifit_nlinear/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/const/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/const/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/ode-initval2/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/ode-initval2/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/statistics/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/statistics/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/multiroots/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/multiroots/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/ntuple/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/ntuple/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/matrix/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/matrix/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/monte/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/monte/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/combination/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/combination/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/blas/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/blas/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/ode-initval/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/ode-initval/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/deriv/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/deriv/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/sys/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/sys/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/ieee-utils/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/ieee-utils/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/randist/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/randist/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/scripts/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/multilarge/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/multilarge/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/block/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/block/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/bspline/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl4godot_gsl/bspline/.deps/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , 'godot_gsl.cpp'
+    , 'godot_gsl_matrix.cpp'
+    , 'godot_gsl_function.cpp'
+    , 'godot_gsl_ode.cpp'
+    , 'godot_gsl_scalar_math.cpp'
+    , 'godot_gsl_thread.cpp'
+    , 'register_types.cpp'
+]
+
+env_godot_gsl = env
+env_godot_gsl.Command('', '', 'cd gsl4godot_gsl')
+env_godot_gsl.Command('', '', './autogen.sh')
+env_godot_gsl.Command('', '', './configure')
+env_godot_gsl.Command('', '', 'cd ..')
+env_godot_gsl.Append(CXXFLAGS=['-g'])
+env_godot_gsl.Append(CPPPATH=scons_paths)
+env_godot_gsl.add_source_files(env.modules_sources, scons_sources)
