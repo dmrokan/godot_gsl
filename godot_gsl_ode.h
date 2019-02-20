@@ -15,6 +15,7 @@ class GodotGSLODE
 public:
     GodotGSLODE() { }
     GodotGSLODE(size_t dim) { init(dim); };
+    GodotGSLODE(size_t dim, bool threaded) { init(dim); _settings.threaded = threaded; };
     ~GodotGSLODE();
     void init(size_t dim);
     void set_function(GodotGSLFunction *fnc);
@@ -28,6 +29,13 @@ public:
     void set_node_path_as_output(Object *obj, const String subpath, const String vn, const int index);
     void update_node_properties();
     void set_initial_conditions(const Array &x0_arr, const double t0);
+    void settings(const double dt_arg, const double update_dt, const bool threaded_arg) {
+        dt = dt_arg;
+        _settings.update_dt = update_dt;
+        _settings.threaded = threaded_arg;
+    }
+    void loop();
+    void tick(const double _dt);
     GodotGSLMatrix *x = NULL;
     GodotGSLMatrix *xdot = NULL;
     size_t dimension = 0;
@@ -41,10 +49,19 @@ private:
     int _jacobian(double t, const double y[], double *dfdy, double dfdt[], void *params);
     gsl_odeiv2_system sys;
     gsl_odeiv2_driver *driver;
-    double t;
-    double dt;
+    double t = 0.0;
+    double dt = 0.0;
     double property_refresh_rate;
     unsigned int t_property = 0;
+
+    struct Settings {
+        bool threaded = false;
+        double next_update_t = 0.0;
+        double update_dt = 0.0;
+    };
+    Settings _settings;
+    bool _ticker = false;
+    bool _lock_tick = false;
 };
 
 #endif

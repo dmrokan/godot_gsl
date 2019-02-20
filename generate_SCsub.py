@@ -69,6 +69,7 @@ def scons_sources(fh, dirs):
     fh.write('    , \'godot_gsl_function.cpp\'\n')
     fh.write('    , \'godot_gsl_ode.cpp\'\n')
     fh.write('    , \'godot_gsl_scalar_math.cpp\'\n')
+    fh.write('    , \'godot_gsl_thread.cpp\'\n')
     fh.write('    , \'register_types.cpp\'\n')
     fh.write(']\n\n')
 

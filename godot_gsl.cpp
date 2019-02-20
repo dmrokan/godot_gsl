@@ -27,6 +27,8 @@ void GodotGSL::_bind_methods()
     ClassDB::bind_method(D_METHOD("matrix_set", "vn", "row", "col", "value"), &GodotGSL::matrix_set);
     ClassDB::bind_method(D_METHOD("matrix_set_from_array", "vn", "row_interval", "col_interval", "value"), &GodotGSL::matrix_set_from_array);
     ClassDB::bind_method(D_METHOD("matrix_get", "vn", "row", "col"), &GodotGSL::matrix_get);
+    ClassDB::bind_method(D_METHOD("ode_run_threaded", "tn", "on", "dt", "update_dt"), &GodotGSL::ode_run_threaded);
+    ClassDB::bind_method(D_METHOD("ode_tick", "on", "dt"), &GodotGSL::ode_tick);
 }
 
 GodotGSL::GodotGSL()
@@ -39,6 +41,7 @@ GodotGSL::~GodotGSL()
     variables.clear();
     functions.clear();
     odes.clear();
+    threads.clear();
 }
 
 void GodotGSL::_add_variable(String vn, GodotGSLMatrix* mtx)
@@ -537,4 +540,42 @@ STYPE GodotGSL::matrix_get(const String vn, int row, int col)
     GGSL_HAS_V(variables, vn, mtx, 0.0);
 
     return mtx->get(row, col);
+}
+
+void GodotGSL::ode_run_threaded(const String tn, const String on, const double dt, const double update_dt)
+{
+    GodotGSLThread<GodotGSLODE*> *thread = _add_thread(tn);
+
+    GodotGSLODE *ode;
+    GGSL_HAS(odes, on, ode);
+
+    /* 3rd param 'true' is assigned to var 'threaded' */
+    ode->settings(dt, update_dt, true);
+
+    thread->set_loop_object(ode);
+    thread->start();
+}
+
+GodotGSLThread<GodotGSLODE*> *GodotGSL::_add_thread(const String tn)
+{
+    if (threads.has(tn))
+    {
+        GGSL_MESSAGE("GodotGSL::_add_thread: threads.has(tn)");
+
+        return threads[tn];
+    }
+    else
+    {
+        GodotGSLThread<GodotGSLODE*> *thread = memnew(GodotGSLThread<GodotGSLODE*>(tn));
+
+        return thread;
+    }
+}
+
+void GodotGSL::ode_tick(const String on, const double dt)
+{
+    GodotGSLODE *ode;
+    GGSL_HAS(odes, on, ode);
+
+    ode->tick(dt);
 }

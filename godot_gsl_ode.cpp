@@ -49,6 +49,12 @@ void GodotGSLODE::set_jacobian(GodotGSLFunction *fnc)
 
 void GodotGSLODE::run(double t0, double t1, double _dt)
 {
+    if (_settings.threaded)
+    {
+        GGSL_ERR_MESSAGE("GodotGSLODE::run: _threaded");
+        return;
+    }
+
     dt = _dt;
     size_t step_count = (t1 - t0) / dt;
     t = t0;
@@ -63,6 +69,12 @@ void GodotGSLODE::run(double t0, double t1, double _dt)
 
 int GodotGSLODE::step(double dt)
 {
+    if (_settings.threaded)
+    {
+        GGSL_ERR_MESSAGE("GodotGSLODE::run: _threaded");
+        return -1;
+    }
+
     double tt = t + dt;
     double *y = x->get_data();
     int status = gsl_odeiv2_driver_apply(driver, &t, tt, y);
@@ -175,4 +187,50 @@ int __jacobian(double t, const double y[], double f[], void *params)
     ((GodotGSLODE*) params)->jac_execute();
 
     return GSL_SUCCESS;
+}
+
+void GodotGSLODE::loop()
+{
+    if (!_ticker)
+    {
+        return;
+    }
+    else
+    {
+        _ticker = false;
+    }
+
+    if (!_settings.threaded)
+    {
+        GGSL_ERR_MESSAGE("GodotGSLODE::run: !_threaded");
+        return;
+    }
+
+    _lock_tick = true;
+    double *y = x->get_data();
+
+    for (double tt = t + dt; t < _settings.next_update_t; tt = t + dt)
+    {
+        int status = gsl_odeiv2_driver_apply(driver, &t, tt, y);
+
+        if (status != GSL_SUCCESS)
+        {
+            GGSL_MESSAGE("GodotGSLODE::step: status != GSL_SUCCESS");
+            return;
+        }
+    }
+
+    update_node_properties();
+    _lock_tick = false;
+}
+
+void GodotGSLODE::tick(const double _dt)
+{
+    if (_lock_tick)
+    {
+        return;
+    }
+
+    _settings.next_update_t = t + _dt;
+    _ticker = true;
 }

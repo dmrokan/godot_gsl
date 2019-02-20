@@ -6,6 +6,7 @@
 #include "godot_gsl_matrix.h"
 #include "godot_gsl_function.h"
 #include "godot_gsl_ode.h"
+#include "godot_gsl_thread.h"
 
 class GodotGSL : public Reference {
     GDCLASS(GodotGSL, Reference);
@@ -40,13 +41,17 @@ public:
     STYPE matrix_get(const String vn, int row, int col);
     void matrix_set_from_array(const String vn, const Array row_interval, const Array col_interval, const Array arr);
     void vector_set_from_array(const String vn, const Array row_interval, const Array arr);
+    void ode_run_threaded(const String tn, const String on, const double dt, const double update_dt);
+    void ode_tick(const String on, const double dt);
 
 private:
     void _add_variable(String vn, GodotGSLMatrix* mtx);
     void _add_function(String fn, GodotGSLFunction* fnc);
+    GodotGSLThread<GodotGSLODE*> *_add_thread(const String tn);
     Map<String, GodotGSLMatrix*> variables;
     Map<String, GodotGSLFunction*> functions;
     Map<String, GodotGSLODE*> odes;
+    Map<String, GodotGSLThread<GodotGSLODE*>*> threads;
     GodotGSLFunction* current;
 };
 
