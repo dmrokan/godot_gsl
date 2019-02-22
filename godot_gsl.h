@@ -29,7 +29,7 @@ public:
     void function(const String fn, const Array args);
     void instruction(const String in, const Array args);
     void callf(const String fn);
-    void ode(const String on, const size_t dim);
+    void ode(const String on, const size_t dim, const double hstart, const double epsabs);
     void ode_set_fx(const String on, const String fn);
     void ode_run(const String on, const Array x0, const Array time_interval, const double dt);
     void ode_set_node_path(const String on, Variant obj_var, const String subpath, const int index);

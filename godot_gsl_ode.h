@@ -6,6 +6,8 @@
 
 #define PARAM_COUNT_STEP 5
 #define ODE_DELTA_T 1e-3
+#define DEFAULT_HSTART 1e-2
+#define DEFAULT_EPSABS 1e-6
 
 int __function(double t, const double y[], double f[], void *params);
 int __jacobian(double t, const double y[], double *dfdy, double dfdt[], void *params);
@@ -15,9 +17,12 @@ class GodotGSLODE
 public:
     GodotGSLODE() { }
     GodotGSLODE(size_t dim) { init(dim); };
+    GodotGSLODE(size_t dim, const double hstart, const double epsabs) { init(dim, hstart, epsabs); };
     GodotGSLODE(size_t dim, bool threaded) { init(dim); _settings.threaded = threaded; };
+    GodotGSLODE(size_t dim, const double hstart, const double epsabs, bool threaded) { init(dim, hstart, epsabs); _settings.threaded = threaded; };
     ~GodotGSLODE();
     void init(size_t dim);
+    void init(size_t dim, const double hstart, const double epsabs);
     void set_function(GodotGSLFunction *fnc);
     void set_jacobian(GodotGSLFunction *fnc);
     void run(double t0, double t1, double _dt);

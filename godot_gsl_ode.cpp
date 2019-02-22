@@ -24,6 +24,11 @@ GodotGSLODE::~GodotGSLODE()
 
 void GodotGSLODE::init(size_t dim)
 {
+    init(dim, 1e-2, 1e-6);
+}
+
+void GodotGSLODE::init(size_t dim, const double hstart, const double epsabs)
+{
     x = memnew(GodotGSLMatrix(dim));
     xdot = memnew(GodotGSLMatrix(dim));
     dimension = dim;
@@ -32,7 +37,7 @@ void GodotGSLODE::init(size_t dim)
     sys.jacobian = NULL;
     sys.dimension = dim;
     sys.params = this;
-    driver = gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rk4, 1e-2, 1e-6, 0.0);
+    driver = gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rk4, hstart, epsabs, 0.0);
 }
 
 void GodotGSLODE::set_function(GodotGSLFunction *fnc)

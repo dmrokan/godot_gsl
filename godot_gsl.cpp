@@ -16,7 +16,7 @@ void GodotGSL::_bind_methods()
     ClassDB::bind_method(D_METHOD("function", "fn", "args"), &GodotGSL::function, "", Array());
     ClassDB::bind_method(D_METHOD("instruction", "ins_name", "args"), &GodotGSL::instruction, "", Array());
     ClassDB::bind_method(D_METHOD("callf", "fn"), &GodotGSL::callf);
-    ClassDB::bind_method(D_METHOD("ode", "on", "dim"), &GodotGSL::ode);
+    ClassDB::bind_method(D_METHOD("ode", "on", "dim", "hstart", "epsabs"), &GodotGSL::ode, "ode1", 1, DEFAULT_HSTART, DEFAULT_EPSABS);
     ClassDB::bind_method(D_METHOD("ode_set_fx", "on", "fn"), &GodotGSL::ode_set_fx);
     ClassDB::bind_method(D_METHOD("ode_run", "on", "x0", "time_interval", "dt"), &GodotGSL::ode_run);
     ClassDB::bind_method(D_METHOD("ode_set_node_path", "on", "object", "property", "index"), &GodotGSL::ode_set_node_path);
@@ -340,17 +340,28 @@ void GodotGSL::callf(const String fn)
     GGSL_DEBUG_MSG("GodotGSL::callf: procedure ends", 0);
 }
 
-void GodotGSL::ode(const String on, const size_t dim)
+void GodotGSL::ode(const String on, const size_t dim, double hstart, double epsabs)
 {
+    if (hstart <= 0.0)
+    {
+        GGSL_ERR_MESSAGE("GodotGSL::ode: hstart <= 0.0, it will be set to default");
+        hstart = DEFAULT_HSTART;
+    }
+    if (epsabs <= 0.0)
+    {
+        GGSL_ERR_MESSAGE("GodotGSL::ode: epsabs <= 0.0, it will be set to default");
+        epsabs = DEFAULT_EPSABS;
+    }
+
     if (odes.has(on))
     {
         GodotGSLODE *to_rm = odes[on];
-        odes[on] = memnew(GodotGSLODE(dim));
+        odes[on] = memnew(GodotGSLODE(dim, hstart, epsabs));
         delete to_rm;
     }
     else
     {
-        odes[on] = memnew(GodotGSLODE(dim));
+        odes[on] = memnew(GodotGSLODE(dim, hstart, epsabs));
     }
 }
 
