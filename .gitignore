@@ -1,0 +1,8 @@
+GPATH
+GRTAGS
+GTAGS
+TAGS
+gtags.conf
+argv_parser_test
+*.o
+*.pyc

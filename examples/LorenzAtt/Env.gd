@@ -123,13 +123,15 @@ func _ready():
     lorenz_obj = $LorenzObj.duplicate()
     init_objects()
     init_ode()
+    gsl_obj.ode_run_threaded("lorenz_t", "lorenz", 1e-3, 0.0)
 
 var time_t = 2.0
 func _process(delta):
     # return
     if gsl_obj == null:
         return
-    gsl_obj.ode_run_delta("lorenz", delta / 1e1)
+    # gsl_obj.ode_run_delta("lorenz", delta / 1e1)
+    gsl_obj.ode_tick("lorenz", delta)
     if time_t > 1.0:
         print(obj_list[0].translation)
         time_t = 0.0

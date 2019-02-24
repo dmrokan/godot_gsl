@@ -19,6 +19,6 @@ mesh = SubResource( 1 )
 material/0 = SubResource( 2 )
 
 [node name="Camera" type="Camera" parent="Env"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 150 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 70 )
 far = 150.0
 
