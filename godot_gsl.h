@@ -7,6 +7,7 @@
 #include "godot_gsl_function.h"
 #include "godot_gsl_ode.h"
 #include "godot_gsl_thread.h"
+#include "godot_gsl_parser.h"
 
 class GodotGSL : public Reference {
     GDCLASS(GodotGSL, Reference);
@@ -43,6 +44,7 @@ public:
     void vector_set_from_array(const String vn, const Array row_interval, const Array arr);
     void ode_run_threaded(const String tn, const String on, const double dt, const double update_dt);
     void ode_tick(const String on, const double dt);
+    void parse(const String code);
 
 private:
     void _add_variable(String vn, GodotGSLMatrix* mtx);
@@ -53,6 +55,7 @@ private:
     Map<String, GodotGSLODE*> odes;
     Map<String, GodotGSLThread<GodotGSLODE*>*> threads;
     GodotGSLFunction* current;
+    GodotGSLParser* parser;
 };
 
 #endif // GODOT_GSL_H

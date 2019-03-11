@@ -98,6 +98,8 @@ String remove_whitespace(const String str)
 GodotGSLFunction::GodotGSLFunction(const String fn)
 {
     name = fn;
+    GGSL_ALLOC(argv, INITIAL_ARGV_COUNT);
+    GGSL_ALLOC_G(instructions, INITIAL_INS_COUNT, GodotGSLInstruction);
 }
 
 GodotGSLFunction::~GodotGSLFunction()
@@ -148,6 +150,16 @@ void GodotGSLFunction::add_arguments(const Array args, GodotGSLMatrix **a)
 
 void GodotGSLFunction::add_argument(const String vn, GodotGSLMatrix *a)
 {
+    if (argc + 1 > argv_buffer_size)
+    {
+        GodotGSLMatrix **new_argv;
+        GGSL_ALLOC(new_argv, (argv_buffer_size + INITIAL_ARGV_COUNT));
+        memcpy(new_argv, argv, argv_buffer_size);
+        GGSL_FREE(argv);
+        argv = new_argv;
+        argv_buffer_size += INITIAL_ARGV_COUNT;
+    }
+
     argv[argc] = a;
     arg_names.append(vn);
 

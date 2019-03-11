@@ -105,8 +105,8 @@ public:
 private:
     Array arg_names;
     String name;
-    GodotGSLMatrix *argv[INITIAL_ARGV_COUNT] = { NULL };
-    GodotGSLInstruction *instructions[INITIAL_INS_COUNT] = { NULL };
+    GodotGSLMatrix **argv;
+    GodotGSLInstruction **instructions;
     size_t argv_buffer_size = INITIAL_ARGV_COUNT;
     size_t instruction_buffer_size = INITIAL_INS_COUNT;
     size_t instruction_count = 0;

@@ -29,6 +29,7 @@ void GodotGSL::_bind_methods()
     ClassDB::bind_method(D_METHOD("matrix_get", "vn", "row", "col"), &GodotGSL::matrix_get);
     ClassDB::bind_method(D_METHOD("ode_run_threaded", "tn", "on", "dt", "update_dt"), &GodotGSL::ode_run_threaded);
     ClassDB::bind_method(D_METHOD("ode_tick", "on", "dt"), &GodotGSL::ode_tick);
+    ClassDB::bind_method(D_METHOD("parse", "code"), &GodotGSL::parse);
 }
 
 GodotGSL::GodotGSL()
@@ -589,4 +590,11 @@ void GodotGSL::ode_tick(const String on, const double dt)
     GGSL_HAS(odes, on, ode);
 
     ode->tick(dt);
+}
+
+void GodotGSL::parse(const String code)
+{
+    parser = memnew(GodotGSLParser);
+    parser->parse(code);
+    parser->traverse();
 }
