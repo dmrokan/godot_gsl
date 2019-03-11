@@ -313,6 +313,7 @@ scons_sources = [
     , 'godot_gsl_ode.cpp'
     , 'godot_gsl_scalar_math.cpp'
     , 'godot_gsl_thread.cpp'
+    , 'godot_gsl_parser.cpp'
     , 'register_types.cpp'
 ]
 

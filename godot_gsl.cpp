@@ -292,15 +292,12 @@ void GodotGSL::function(const String fn, const Array args)
     int size = args.size();
     if (size > 0)
     {
-        GodotGSLMatrix **argv;
-        GGSL_ALLOC(argv, size);
-
         for (int k = 0; k < size; k++)
         {
             String vn = args[k];
             if (variables.has(vn))
             {
-                argv[k] = variables[vn];
+                fnc->add_argument(vn, variables[vn]);
             }
             else
             {
@@ -309,8 +306,6 @@ void GodotGSL::function(const String fn, const Array args)
                 return;
             }
         }
-
-        fnc->add_arguments(args, argv);
     }
 
     current = fnc;

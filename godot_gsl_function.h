@@ -4,8 +4,8 @@
 #include "godot_gsl_matrix.h"
 
 #define MAX_ARG_COUNT 3
-#define INITIAL_ARGV_COUNT 8
-#define INITIAL_INS_COUNT 128
+#define INITIAL_ARGV_COUNT 16
+#define INITIAL_INS_COUNT 64
 
 class GodotGSLFunction
 {

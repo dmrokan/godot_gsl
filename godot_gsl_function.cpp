@@ -126,10 +126,6 @@ GodotGSLFunction::~GodotGSLFunction()
     }
 }
 
-/*
- * TODO!!: Now supports 8 arguments
- * Autoincrease if needed
- */
 void GodotGSLFunction::add_arguments(const Array args, GodotGSLMatrix **a)
 {
     arg_names = args;
@@ -142,10 +138,8 @@ void GodotGSLFunction::add_arguments(const Array args, GodotGSLMatrix **a)
 
     for (int k = 0; k < args.size(); k++)
     {
-        argv[k] = a[k];
+        add_argument(arg_names[k], a[k]);
     }
-
-    argc = args.size();
 }
 
 void GodotGSLFunction::add_argument(const String vn, GodotGSLMatrix *a)
@@ -154,9 +148,10 @@ void GodotGSLFunction::add_argument(const String vn, GodotGSLMatrix *a)
     {
         GodotGSLMatrix **new_argv;
         GGSL_ALLOC(new_argv, (argv_buffer_size + INITIAL_ARGV_COUNT));
-        memcpy(new_argv, argv, argv_buffer_size);
-        GGSL_FREE(argv);
+        memcpy(new_argv, argv, argv_buffer_size * sizeof(GodotGSLMatrix*));
+        GodotGSLMatrix **to_rm = argv;
         argv = new_argv;
+        GGSL_FREE(to_rm);
         argv_buffer_size += INITIAL_ARGV_COUNT;
     }
 
@@ -166,12 +161,19 @@ void GodotGSLFunction::add_argument(const String vn, GodotGSLMatrix *a)
     argc++;
 }
 
-/*
- * TODO!!: Now supports 16 insturctions
- * Autoincrease if needed
- */
 void GodotGSLFunction::add_instruction(const String in, const Array args)
 {
+    if (instruction_count + 1 > instruction_buffer_size)
+    {
+        GodotGSLInstruction **new_instructions;
+        GGSL_ALLOC_G(new_instructions, (instruction_buffer_size + INITIAL_INS_COUNT), GodotGSLInstruction);
+        memcpy(new_instructions, instructions, instruction_buffer_size * sizeof(GodotGSLInstruction*));
+        GodotGSLInstruction **to_rm = instructions;
+        instructions = new_instructions;
+        GGSL_FREE(to_rm);
+        instruction_buffer_size += INITIAL_INS_COUNT;
+    }
+
     GodotGSLInstruction *ins = memnew(GodotGSLInstruction(in));
     set_instruction_arguments(ins, args);
     instructions[instruction_count] = ins;
