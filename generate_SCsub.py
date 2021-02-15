@@ -2,7 +2,6 @@ import os
 
 excluded_dir_names = [
     'autom4te.cache'
-    , 'build'
     , 'doc'
     , 'doc_texinfo'
     , 'test'
